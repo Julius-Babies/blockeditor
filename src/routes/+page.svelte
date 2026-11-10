@@ -2,9 +2,9 @@
     import InputField from "#lib/InputField.svelte";
     import {JsonView} from "@zerodevx/svelte-json-view";
     import type {PageState} from "#lib/page.ts";
-    import {buildPageFromStateAndHistory} from "#lib/history.ts";
+    import {applyHistoryToPageState, buildPageFromStateAndHistory} from "#lib/history.ts";
 
-    const baseState: PageState = {
+    let baseState: PageState = $state({
         textContent: "Hello World",
         blockMarkers: [
             {
@@ -13,11 +13,11 @@
                 startPosition: 0,
             }
         ]
-    }
+    })
 
     let history: ({timestamp: number} & ({type: "insert", payload: string, index: number} | {type: "delete", from: number, to: number}))[] = $state([]);
 
-    let currentPage = $derived.by(() => buildPageFromStateAndHistory(baseState, history));
+    let currentPage = $derived.by(() => buildPageFromStateAndHistory($state.snapshot(baseState), history));
 
     let cursorPosition = $state(4);
 
@@ -40,6 +40,11 @@
         })
         cursorPosition -= char.length;
     }
+
+    function apply() {
+        baseState = applyHistoryToPageState($state.snapshot(baseState), history);
+        history = [];
+    }
 </script>
 
 <div class="w-full h-full flex flex-row">
@@ -57,8 +62,14 @@
     </div>
 
     <div class="h-full flex-1 flex flex-col">
-        {cursorPosition}
+        <div>
+            Cursor Position: {cursorPosition}
+        </div>
 
-        <JsonView json={{page: currentPage, history: history}} />
+        <div>
+            <button onclick={apply}>Apply changes</button>
+        </div>
+
+        <JsonView json={{baseState: baseState, page: currentPage, history: history}} />
     </div>
 </div>

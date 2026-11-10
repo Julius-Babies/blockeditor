@@ -6,10 +6,9 @@ export type HistoryAction = { timestamp: number } &
         { type: "delete", from: number, to: number }
         )
 
-export function buildPageFromStateAndHistory(page: PageState, events: HistoryAction[]): Page {
 
-    let result = structuredClone(page);
-
+export function applyHistoryToPageState(page: PageState, events: HistoryAction[]): PageState {
+    let result = page;
     events
         .toSorted((a, b) => a.timestamp - b.timestamp)
         .forEach(event => {
@@ -31,5 +30,9 @@ export function buildPageFromStateAndHistory(page: PageState, events: HistoryAct
             }
         })
 
-    return buildPageFromState(result);
+    return result;
+}
+
+export function buildPageFromStateAndHistory(page: PageState, events: HistoryAction[]): Page {
+    return buildPageFromState(applyHistoryToPageState(page, events));
 }
