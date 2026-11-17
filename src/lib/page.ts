@@ -35,6 +35,7 @@ export function getBlockAtPosition(page: Page, position: number): { block: TextB
 
 export type PageState = {
     textContent: string;
+    commit_id: string;
     blockMarkers: {
         startPosition: number;
         type: "text",
